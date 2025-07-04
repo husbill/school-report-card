@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Smart Report Card Generator</title>
+  <script src="script.js" defer></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 text-sm font-sans">
+  <div class="max-w-4xl mx-auto bg-white p-6 my-8 rounded shadow">
+    <div class="mb-6">
+      <h1 class="text-2xl font-bold text-center">Report Card Generator</h1>
+    </div>
+
+    <!-- School and Student Info -->
+    <form id="reportForm" class="space-y-4">
+      <div class="grid grid-cols-2 gap-4">
+        <input class="border p-2 w-full rounded" placeholder="School Name" id="schoolName" required />
+        <input class="border p-2 w-full rounded" placeholder="Session (e.g. 2024/2025)" id="session" required />
+        <input class="border p-2 w-full rounded" placeholder="Term" id="term" required />
+        <input class="border p-2 w-full rounded" placeholder="Student Name" id="studentName" required />
+        <input class="border p-2 w-full rounded" placeholder="Class" id="studentClass" required />
+        <input class="border p-2 w-full rounded" placeholder="Age" id="age" required />
+        <input class="border p-2 w-full rounded" placeholder="Parent Email" id="parentEmail" required />
+      </div>
+
+      <!-- Subjects Table -->
+      <table class="w-full border mt-6 text-center">
+        <thead class="bg-gray-200">
+          <tr>
+            <th>Subject</th><th>CA1</th><th>CA2</th><th>Exam</th>
+          </tr>
+        </thead>
+        <tbody id="subjectTable">
+          <tr>
+            <td><input class="w-full p-1 border" value="Mathematics" /></td>
+            <td><input class="w-full p-1 border" type="number" /></td>
+            <td><input class="w-full p-1 border" type="number" /></td>
+            <td><input class="w-full p-1 border" type="number" /></td>
+          </tr>
+          <tr>
+            <td><input class="w-full p-1 border" value="English" /></td>
+            <td><input class="w-full p-1 border" type="number" /></td>
+            <td><input class="w-full p-1 border" type="number" /></td>
+            <td><input class="w-full p-1 border" type="number" /></td>
+          </tr>
+          <tr>
+            <td><input class="w-full p-1 border" value="Science" /></td>
+            <td><input class="w-full p-1 border" type="number" /></td>
+            <td><input class="w-full p-1 border" type="number" /></td>
+            <td><input class="w-full p-1 border" type="number" /></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Add more subjects -->
+      <button type="button" onclick="addSubjectRow()" class="bg-gray-800 text-white px-3 py-1 rounded">+ Add Subject</button>
+
+      <!-- Behavior Ratings -->
+      <div class="mt-4">
+        <label class="block font-semibold">Behavior Ratings (1-5):</label>
+        <input class="border p-2 rounded w-full" placeholder="E.g. Punctuality: 5, Neatness: 4" id="behavior" />
+      </div>
+
+      <!-- Comments -->
+      <textarea id="teacherComment" placeholder="Teacher's Comment" class="border p-2 w-full rounded mt-2"></textarea>
+      <textarea id="headComment" placeholder="Headteacher's Comment" class="border p-2 w-full rounded mt-2"></textarea>
+
+      <!-- Submit -->
+      <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded mt-4">Generate Report</button>
+    </form>
+
+    <!-- Generated Report -->
+    <div id="reportCard" class="mt-10 hidden">
+      <div id="reportContent" class="border p-4 bg-gray-50 rounded"></div>
+
+      <div class="mt-4 space-x-2">
+        <button onclick="printReport()" class="bg-green-600 text-white px-3 py-1 rounded">Print / Save as PDF</button>
+        <button onclick="sendEmail()" class="bg-purple-600 text-white px-3 py-1 rounded">Send to Parent Email</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- EmailJS -->
+  <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+</body>
+</html>
