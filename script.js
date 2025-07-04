@@ -3,6 +3,23 @@ emailjs.init("5Fu2RhS8HXgydjmgM"); // Your public key
 document.getElementById("reportForm").addEventListener("submit", function (e) {
   e.preventDefault();
 
+  const logoInput = document.getElementById("schoolLogo");
+  const logoFile = logoInput.files[0];
+  const reader = new FileReader();
+
+  reader.onload = function (e) {
+    const logoDataUrl = e.target.result;
+    generateReport(logoDataUrl);
+  };
+
+  if (logoFile) {
+    reader.readAsDataURL(logoFile);
+  } else {
+    generateReport(null); // no logo uploaded
+  }
+});
+
+function generateReport(logoUrl) {
   const school = document.getElementById("schoolName").value;
   const session = document.getElementById("session").value;
   const term = document.getElementById("term").value;
@@ -41,14 +58,19 @@ document.getElementById("reportForm").addEventListener("submit", function (e) {
 
   const avg = (totalScore / subjectCount).toFixed(2);
 
+  const logoImg = logoUrl
+    ? `<img src="${logoUrl}" alt="School Logo" class="w-16 h-16 mb-2 mx-auto" />`
+    : "";
+
   const report = `
     <div class="text-center mb-4">
-      <h2 class="text-xl font-bold">${school}</h2>
+      ${logoImg}
+      <h2 class="text-lg font-bold">${school}</h2>
       <p><strong>Session:</strong> ${session} | <strong>Term:</strong> ${term}</p>
       <p><strong>Name:</strong> ${name} | <strong>Class:</strong> ${sClass} | <strong>Age:</strong> ${age}</p>
     </div>
 
-    <table class="w-full border text-center mb-4">
+    <table class="w-full border text-center mb-4 text-xs sm:text-sm">
       <thead class="bg-gray-300">
         <tr><th>Subject</th><th>CA1</th><th>CA2</th><th>Exam</th><th>Total</th><th>Grade</th><th>Comment</th></tr>
       </thead>
@@ -64,7 +86,7 @@ document.getElementById("reportForm").addEventListener("submit", function (e) {
 
   document.getElementById("reportContent").innerHTML = report;
   document.getElementById("reportCard").classList.remove("hidden");
-});
+}
 
 function getGrade(score) {
   if (score >= 70) return "A";
@@ -84,14 +106,27 @@ function getComment(grade) {
   }[grade];
 }
 
+function addSubjectRow() {
+  const table = document.getElementById("subjectTable");
+  const row = document.createElement("tr");
+  row.innerHTML = `
+    <td><input class="w-full p-1 border" value="" /></td>
+    <td><input class="w-full p-1 border" type="number" /></td>
+    <td><input class="w-full p-1 border" type="number" /></td>
+    <td><input class="w-full p-1 border" type="number" /></td>`;
+  table.appendChild(row);
+}
+
 function printReport() {
-  const printContents = document.getElementById("reportContent").innerHTML;
-  const win = window.open("", "", "width=900,height=700");
-  win.document.write("<html><head><title>Report Card</title></head><body>");
-  win.document.write(printContents);
-  win.document.write("</body></html>");
-  win.document.close();
-  win.print();
+  const report = document.getElementById("reportContent");
+  const opt = {
+    margin: 0.5,
+    filename: 'report_card.pdf',
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: {},
+    jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+  };
+  html2pdf().from(report).set(opt).save();
 }
 
 function sendEmail() {
@@ -104,22 +139,9 @@ function sendEmail() {
     school_name: school,
     to_email: email,
   })
-  .then(() => {
-    alert("Email sent successfully!");
-  })
+  .then(() => alert("Email sent successfully!"))
   .catch((err) => {
     console.error("Email error:", err);
     alert("Failed to send email.");
   });
-}
-
-function addSubjectRow() {
-  const table = document.getElementById("subjectTable");
-  const row = document.createElement("tr");
-  row.innerHTML = `
-    <td><input class="w-full p-1 border" value="" /></td>
-    <td><input class="w-full p-1 border" type="number" /></td>
-    <td><input class="w-full p-1 border" type="number" /></td>
-    <td><input class="w-full p-1 border" type="number" /></td>`;
-  table.appendChild(row);
 }
