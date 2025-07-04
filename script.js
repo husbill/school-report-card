@@ -1,5 +1,7 @@
-emailjs.init("5Fu2RhS8HXgydjmgM"); // Your public key
+// ✅ Initialize EmailJS with your public key
+emailjs.init("5Fu2RhS8HXgydjmgM"); // Replace with your public key
 
+// ✅ Handle form submission
 document.getElementById("reportForm").addEventListener("submit", function (e) {
   e.preventDefault();
 
@@ -15,10 +17,11 @@ document.getElementById("reportForm").addEventListener("submit", function (e) {
   if (logoFile) {
     reader.readAsDataURL(logoFile);
   } else {
-    generateReport(null); // no logo uploaded
+    generateReport(null); // No logo uploaded
   }
 });
 
+// ✅ Build the report card HTML
 function generateReport(logoUrl) {
   const school = document.getElementById("schoolName").value;
   const session = document.getElementById("session").value;
@@ -26,7 +29,6 @@ function generateReport(logoUrl) {
   const name = document.getElementById("studentName").value;
   const sClass = document.getElementById("studentClass").value;
   const age = document.getElementById("age").value;
-  const email = document.getElementById("parentEmail").value;
   const behavior = document.getElementById("behavior").value;
   const teacherComment = document.getElementById("teacherComment").value;
   const headComment = document.getElementById("headComment").value;
@@ -88,6 +90,7 @@ function generateReport(logoUrl) {
   document.getElementById("reportCard").classList.remove("hidden");
 }
 
+// ✅ Grade logic
 function getGrade(score) {
   if (score >= 70) return "A";
   if (score >= 60) return "B";
@@ -106,6 +109,7 @@ function getComment(grade) {
   }[grade];
 }
 
+// ✅ Add more subjects
 function addSubjectRow() {
   const table = document.getElementById("subjectTable");
   const row = document.createElement("tr");
@@ -117,6 +121,7 @@ function addSubjectRow() {
   table.appendChild(row);
 }
 
+// ✅ Save as PDF
 function printReport() {
   const report = document.getElementById("reportContent");
   const opt = {
@@ -129,19 +134,24 @@ function printReport() {
   html2pdf().from(report).set(opt).save();
 }
 
+// ✅ Send email without logo to avoid 413 error
 function sendEmail() {
   const email = document.getElementById("parentEmail").value;
-  const htmlContent = document.getElementById("reportContent").innerHTML;
   const school = document.getElementById("schoolName").value;
 
+  const fullHTML = document.getElementById("reportContent").innerHTML;
+
+  // ✅ Remove <img> tag to reduce size
+  const reportHTMLWithoutLogo = fullHTML.replace(/<img[^>]*>/g, '');
+
   emailjs.send("service_cb7w64g", "template_wy53mpx", {
-    report_card_html: htmlContent,
+    report_card_html: reportHTMLWithoutLogo,
     school_name: school,
     to_email: email,
   })
   .then(() => alert("Email sent successfully!"))
   .catch((err) => {
     console.error("Email error:", err);
-    alert("Failed to send email.");
+    alert("Failed to send email. Try again or contact support.");
   });
 }
