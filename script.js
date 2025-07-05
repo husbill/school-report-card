@@ -1,146 +1,88 @@
-// ✅ Initialize EmailJS with your public key
-emailjs.init("5Fu2RhS8HXgydjmgM"); // Replace with your public key
 
-// ✅ Handle form submission
-document.getElementById("reportForm").addEventListener("submit", function (e) {
-  e.preventDefault();
+emailjs.init("5Fu2RhS8HXgydjmgM"); // Replace with your user ID
 
-  const logoInput = document.getElementById("schoolLogo");
-  const logoFile = logoInput.files[0];
-  const reader = new FileReader();
-
-  reader.onload = function (e) {
-    const logoDataUrl = e.target.result;
-    generateReport(logoDataUrl);
-  };
-
-  if (logoFile) {
-    reader.readAsDataURL(logoFile);
-  } else {
-    generateReport(null); // No logo uploaded
+function addSubjectRow() {
+  const table = document.getElementById("subjectTable");
+  const row = table.insertRow();
+  for (let i = 0; i < 4; i++) {
+    const cell = row.insertCell(i);
+    const input = document.createElement("input");
+    input.className = "w-full p-1 border";
+    if (i === 0) input.placeholder = "Subject";
+    else input.type = "number";
+    cell.appendChild(input);
   }
+}
+
+document.getElementById("reportForm").addEventListener("submit", function(e) {
+  e.preventDefault();
+  generateReport();
 });
 
-// ✅ Build the report card HTML
-function generateReport(logoUrl) {
-  const school = document.getElementById("schoolName").value;
-  const session = document.getElementById("session").value;
-  const term = document.getElementById("term").value;
+function generateReport() {
   const name = document.getElementById("studentName").value;
   const sClass = document.getElementById("studentClass").value;
   const age = document.getElementById("age").value;
   const behavior = document.getElementById("behavior").value;
+  const term = document.getElementById("term").value;
+  const session = document.getElementById("session").value;
+  const school = document.getElementById("schoolName").value;
   const teacherComment = document.getElementById("teacherComment").value;
   const headComment = document.getElementById("headComment").value;
 
+  const table = document.getElementById("subjectTable");
+  let rows = "";
+  let total = 0;
+  let count = 0;
 
+  for (let i = 0; i < table.rows.length; i++) {
+    const cells = table.rows[i].cells;
+    const subject = cells[0].querySelector("input").value;
+    const ca1 = parseFloat(cells[1].querySelector("input").value) || 0;
+    const ca2 = parseFloat(cells[2].querySelector("input").value) || 0;
+    const exam = parseFloat(cells[3].querySelector("input").value) || 0;
+    const totalScore = ca1 + ca2 + exam;
+    const grade = totalScore >= 70 ? "A" : totalScore >= 60 ? "B" : totalScore >= 50 ? "C" : "F";
+    total += totalScore;
+    count++;
+    rows += `<tr><td>${subject}</td><td>${ca1}</td><td>${ca2}</td><td>${exam}</td><td>${totalScore}</td><td>${grade}</td></tr>`;
+  }
 
-  const rows = document.querySelectorAll("#subjectTable tr");
-  let totalScore = 0;
-  let subjectCount = 0;
-
-  let tableRows = "";
-
-  rows.forEach((row) => {
-    const subject = row.children[0].firstElementChild.value;
-    const ca1 = parseInt(row.children[1].firstElementChild.value) || 0;
-    const ca2 = parseInt(row.children[2].firstElementChild.value) || 0;
-    const exam = parseInt(row.children[3].firstElementChild.value) || 0;
-    const total = ca1 + ca2 + exam;
-    const grade = getGrade(total);
-    const comment = getComment(grade);
-
-    totalScore += total;
-    subjectCount++;
-
-    tableRows += `
-      <tr>
-        <td>${subject}</td><td>${ca1}</td><td>${ca2}</td><td>${exam}</td>
-        <td>${total}</td><td>${grade}</td><td>${comment}</td>
-      </tr>`;
-  });
-
-  const avg = (totalScore / subjectCount).toFixed(2);
-
-  const logoImg = logoUrl
-    ? `<img src="${logoUrl}" alt="School Logo" class="w-16 h-16 mb-2 mx-auto" />`
-    : "";
-
-  const report = `
-    <div class="text-center mb-4">
-      ${logoImg}
-      <h2 class="text-lg font-bold">${school}</h2>
-      <p><strong>Session:</strong> ${session} | <strong>Term:</strong> ${term}</p>
-      <p><strong>Name:</strong> ${name} | <strong>Class:</strong> ${sClass} | <strong>Age:</strong> ${age}</p>
-    </div>
-
-    <table class="w-full border text-center mb-4 text-xs sm:text-sm">
-      <thead class="bg-gray-300">
-        <tr><th>Subject</th><th>CA1</th><th>CA2</th><th>Exam</th><th>Total</th><th>Grade</th><th>Comment</th></tr>
-      </thead>
-      <tbody>${tableRows}</tbody>
+  const avg = (total / count).toFixed(2);
+  const reportHTML = `
+    <h2 class="text-center font-bold text-lg">${school} - Report Card</h2>
+    <p><strong>Student Name:</strong> ${name}</p>
+    <p><strong>Class:</strong> ${sClass}</p>
+    <p><strong>Age:</strong> ${age}</p>
+    <p><strong>Term:</strong> ${term}</p>
+    <p><strong>Session:</strong> ${session}</p>
+    <table border="1" class="w-full text-sm mt-2">
+      <tr><th>Subject</th><th>CA1</th><th>CA2</th><th>Exam</th><th>Total</th><th>Grade</th></tr>
+      ${rows}
     </table>
-
-    <p><strong>Total Score:</strong> ${totalScore}</p>
     <p><strong>Average:</strong> ${avg}</p>
-    <p><strong>Behavior Ratings:</strong> ${behavior}</p>
-    <p><strong>Teacher’s Comment:</strong> ${teacherComment}</p>
-    <p><strong>Headteacher’s Comment:</strong> ${headComment}</p>
+    <p><strong>Behavior:</strong> ${behavior}</p>
+    <p><strong>Teacher's Comment:</strong> ${teacherComment}</p>
+    <p><strong>Headteacher's Comment:</strong> ${headComment}</p>
   `;
 
-  document.getElementById("reportContent").innerHTML = report;
   document.getElementById("reportCard").classList.remove("hidden");
+  document.getElementById("reportContent").innerHTML = reportHTML;
 }
 
-// ✅ Grade logic
-function getGrade(score) {
-  if (score >= 70) return "A";
-  if (score >= 60) return "B";
-  if (score >= 50) return "C";
-  if (score >= 40) return "D";
-  return "F";
-}
-
-function getComment(grade) {
-  return {
-    A: "Excellent",
-    B: "Very Good",
-    C: "Good",
-    D: "Needs Support",
-    F: "Poor",
-  }[grade];
-}
-
-// ✅ Add more subjects
-function addSubjectRow() {
-  const table = document.getElementById("subjectTable");
-  const row = document.createElement("tr");
-  row.innerHTML = `
-    <td><input class="w-full p-1 border" value="" /></td>
-    <td><input class="w-full p-1 border" type="number" /></td>
-    <td><input class="w-full p-1 border" type="number" /></td>
-    <td><input class="w-full p-1 border" type="number" /></td>`;
-  table.appendChild(row);
-}
-
-// ✅ Save as PDF
 function printReport() {
   const report = document.getElementById("reportCard");
-
-  // Ensure it's visible
   report.classList.remove("hidden");
 
-  // Use a short delay to allow DOM to render fully
   setTimeout(() => {
-    const opt = {
-      margin: 0.5,
-      filename: 'report_card.pdf',
-      image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: { scale: 2 },
-      jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
-    };
-
-    html2pdf().from(document.getElementById("reportContent")).set(opt).save();
+    html2canvas(report).then(canvas => {
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jspdf.jsPDF();
+      const width = pdf.internal.pageSize.getWidth();
+      const height = (canvas.height * width) / canvas.width;
+      pdf.addImage(imgData, 'PNG', 0, 0, width, height);
+      pdf.save("report_card.pdf");
+    });
   }, 500);
 }
 
@@ -173,5 +115,3 @@ function sendEmail() {
     alert("Failed to send summary. Please try again.");
   });
 }
-
-  
