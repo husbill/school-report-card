@@ -134,24 +134,31 @@ function printReport() {
   html2pdf().from(report).set(opt).save();
 }
 
-// ✅ Send email without logo to avoid 413 error
 function sendEmail() {
   const email = document.getElementById("parentEmail").value;
   const school = document.getElementById("schoolName").value;
+  const name = document.getElementById("studentName").value;
+  const sClass = document.getElementById("studentClass").value;
+  const avgScore = document.querySelector("#reportContent").innerHTML.match(/Average:<\/strong>\s*(\d+\.?\d*)/);
+  const avg = avgScore ? avgScore[1] : "N/A";
+  const teacherComment = document.getElementById("teacherComment").value;
 
-  const fullHTML = document.getElementById("reportContent").innerHTML;
-
-  // ✅ Remove <img> tag to reduce size
-  const reportHTMLWithoutLogo = fullHTML.replace(/<img[^>]*>/g, '');
+  const summaryHTML = `
+    <p><strong>Student:</strong> ${name}</p>
+    <p><strong>Class:</strong> ${sClass}</p>
+    <p><strong>Average:</strong> ${avg}</p>
+    <p><strong>Teacher's Comment:</strong> ${teacherComment}</p>
+    <p><strong>Note:</strong> Full report was previewed and downloaded as PDF.</p>
+  `;
 
   emailjs.send("service_cb7w64g", "template_wy53mpx", {
-    report_card_html: reportHTMLWithoutLogo,
+    report_card_html: summaryHTML,
     school_name: school,
     to_email: email,
   })
   .then(() => alert("Email sent successfully!"))
   .catch((err) => {
     console.error("Email error:", err);
-    alert("Failed to send email. Try again or contact support.");
+    alert("Failed to send summary. Please try again.");
   });
 }
