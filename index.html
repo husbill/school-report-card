@@ -1,74 +1,78 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Smart Report Card Generator</title>
-  <script src="script.js" defer></script>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Report Card Generator</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
-<body class="bg-gray-100 text-sm font-sans">
-  <div class="max-w-4xl mx-auto bg-white p-4 my-6 rounded shadow">
-    <h1 class="text-xl font-bold text-center mb-4">Smart Report Card Generator</h1>
+<body class="bg-gray-100">
 
-    <form id="reportForm" class="space-y-4">
-      <!-- Logo upload -->
-      <div>
-        <label class="block font-semibold">Upload School Logo:</label>
-        <input type="file" id="schoolLogo" accept="image/*" class="mt-1" />
-      </div>
+  <form id="reportForm" class="max-w-xl mx-auto p-4 bg-white rounded shadow">
+    <h2 class="text-xl font-bold mb-4 text-center">Generate Report Card</h2>
 
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <input class="border p-2 rounded" placeholder="School Name" id="schoolName" required />
-        <input class="border p-2 rounded" placeholder="Session" id="session" required />
-        <input class="border p-2 rounded" placeholder="Term" id="term" required />
-        <input class="border p-2 rounded" placeholder="Student Name" id="studentName" required />
-        <input class="border p-2 rounded" placeholder="Class" id="studentClass" required />
-        <input class="border p-2 rounded" placeholder="Age" id="age" required />
-        <input class="border p-2 rounded" placeholder="Parent Email" id="parentEmail" required />
-      </div>
-<label for="pdfLink" class="block mt-4">Paste link to report PDF (e.g., from Google Drive):</label>
-<input type="text" id="pdfLink" class="w-full p-2 border rounded mt-1 mb-4" placeholder="https://drive.google.com/..." />
+    <label for="schoolLogo">Upload School Logo</label>
+    <input type="file" id="schoolLogo" accept="image/*" class="w-full p-2 border rounded mb-4" />
 
-      <table class="w-full mt-4 border text-center text-xs sm:text-sm">
-        <thead class="bg-gray-200">
-          <tr><th>Subject</th><th>CA1</th><th>CA2</th><th>Exam</th></tr>
-        </thead>
-        <tbody id="subjectTable">
-          <tr>
-            <td><input class="w-full p-1 border" value="Mathematics" /></td>
-            <td><input class="w-full p-1 border" type="number" /></td>
-            <td><input class="w-full p-1 border" type="number" /></td>
-            <td><input class="w-full p-1 border" type="number" /></td>
-          </tr>
-          <tr>
-            <td><input class="w-full p-1 border" value="English" /></td>
-            <td><input class="w-full p-1 border" type="number" /></td>
-            <td><input class="w-full p-1 border" type="number" /></td>
-            <td><input class="w-full p-1 border" type="number" /></td>
-          </tr>
-        </tbody>
-      </table>
-      <button type="button" onclick="addSubjectRow()" class="bg-gray-800 text-white px-3 py-1 rounded mt-2">+ Add Subject</button>
+    <label for="schoolName">School Name</label>
+    <input type="text" id="schoolName" required class="w-full p-2 border rounded mb-4" />
 
-      <textarea id="behavior" placeholder="Behavior Ratings (e.g., Punctuality: 5)" class="border p-2 w-full rounded mt-2"></textarea>
-      <textarea id="teacherComment" placeholder="Teacher's Comment" class="border p-2 w-full rounded mt-2"></textarea>
-      <textarea id="headComment" placeholder="Headteacher's Comment" class="border p-2 w-full rounded mt-2"></textarea>
+    <label for="session">Session</label>
+    <input type="text" id="session" required class="w-full p-2 border rounded mb-4" />
 
-      <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded mt-4">Generate Report</button>
-    </form>
+    <label for="term">Term</label>
+    <input type="text" id="term" required class="w-full p-2 border rounded mb-4" />
 
-    <div id="reportCard" class="mt-10 hidden">
-      <div id="reportContent" class="bg-white p-4 border rounded text-xs sm:text-sm"></div>
+    <label for="studentName">Student Name</label>
+    <input type="text" id="studentName" required class="w-full p-2 border rounded mb-4" />
 
-      <div class="mt-4 space-x-2">
-        <button onclick="printReport()" class="bg-green-600 text-white px-3 py-1 rounded">Print / Save as PDF</button>
-        <button onclick="sendEmail()" class="bg-purple-600 text-white px-3 py-1 rounded">Send to Parent Email</button>
-      </div>
+    <label for="studentClass">Class</label>
+    <input type="text" id="studentClass" required class="w-full p-2 border rounded mb-4" />
+
+    <label for="age">Age</label>
+    <input type="number" id="age" required class="w-full p-2 border rounded mb-4" />
+
+    <label for="behavior">Behavior Rating</label>
+    <input type="text" id="behavior" class="w-full p-2 border rounded mb-4" />
+
+    <label for="teacherComment">Teacher's Comment</label>
+    <textarea id="teacherComment" class="w-full p-2 border rounded mb-4"></textarea>
+
+    <label for="headComment">Headteacher's Comment</label>
+    <textarea id="headComment" class="w-full p-2 border rounded mb-4"></textarea>
+
+    <label for="parentEmail">Parent Email</label>
+    <input type="email" id="parentEmail" required class="w-full p-2 border rounded mb-4" />
+
+    <label for="pdfLink" class="block mt-2">Paste link to report PDF (e.g., from Google Drive):</label>
+    <input type="text" id="pdfLink" class="w-full p-2 border rounded mb-4" placeholder="https://drive.google.com/..." />
+
+    <h3 class="text-lg font-semibold mb-2">Subjects</h3>
+    <table class="w-full border mb-4 text-sm" id="subjectTable">
+      <tr>
+        <td><input class="w-full p-1 border" value="Mathematics" /></td>
+        <td><input class="w-full p-1 border" type="number" placeholder="CA1" /></td>
+        <td><input class="w-full p-1 border" type="number" placeholder="CA2" /></td>
+        <td><input class="w-full p-1 border" type="number" placeholder="Exam" /></td>
+      </tr>
+    </table>
+    <button type="button" onclick="addSubjectRow()" class="bg-blue-500 text-white px-4 py-2 rounded mb-4">+ Add Subject</button>
+
+    <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded w-full">Generate Report</button>
+  </form>
+
+  <div id="reportCard" class="max-w-3xl mx-auto mt-6 p-4 bg-gray-50 border rounded hidden">
+    <div id="reportContent" class="text-sm"></div>
+    <div class="mt-4 text-center space-x-4">
+      <button onclick="printReport()" class="bg-purple-600 text-white px-4 py-2 rounded">Save as PDF</button>
+      <button onclick="sendEmail()" class="bg-blue-600 text-white px-4 py-2 rounded">Send to Parent Email</button>
     </div>
   </div>
 
-  <!-- EmailJS -->
   <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
