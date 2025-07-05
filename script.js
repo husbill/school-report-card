@@ -133,7 +133,6 @@ function printReport() {
   };
   html2pdf().from(report).set(opt).save();
 }
-
 function sendEmail() {
   const email = document.getElementById("parentEmail").value;
   const school = document.getElementById("schoolName").value;
@@ -142,13 +141,14 @@ function sendEmail() {
   const avgScore = document.querySelector("#reportContent").innerHTML.match(/Average:<\/strong>\s*(\d+\.?\d*)/);
   const avg = avgScore ? avgScore[1] : "N/A";
   const teacherComment = document.getElementById("teacherComment").value;
+  const pdfLink = document.getElementById("pdfLink").value;
 
   const summaryHTML = `
     <p><strong>Student:</strong> ${name}</p>
     <p><strong>Class:</strong> ${sClass}</p>
     <p><strong>Average:</strong> ${avg}</p>
     <p><strong>Teacher's Comment:</strong> ${teacherComment}</p>
-    <p><strong>Note:</strong> Full report was previewed and downloaded as PDF.</p>
+    ${pdfLink ? `<p><strong>Download Report:</strong> <a href="${pdfLink}" target="_blank">Click here</a></p>` : ""}
   `;
 
   emailjs.send("service_cb7w64g", "template_wy53mpx", {
@@ -162,3 +162,5 @@ function sendEmail() {
     alert("Failed to send summary. Please try again.");
   });
 }
+
+  
