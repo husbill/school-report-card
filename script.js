@@ -33,6 +33,8 @@ function generateReport(logoUrl) {
   const teacherComment = document.getElementById("teacherComment").value;
   const headComment = document.getElementById("headComment").value;
 
+
+
   const rows = document.querySelectorAll("#subjectTable tr");
   let totalScore = 0;
   let subjectCount = 0;
@@ -123,16 +125,25 @@ function addSubjectRow() {
 
 // ✅ Save as PDF
 function printReport() {
-  const report = document.getElementById("reportContent");
-  const opt = {
-    margin: 0.5,
-    filename: 'report_card.pdf',
-    image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: {},
-    jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
-  };
-  html2pdf().from(report).set(opt).save();
+  const report = document.getElementById("reportCard");
+
+  // Ensure it's visible
+  report.classList.remove("hidden");
+
+  // Use a short delay to allow DOM to render fully
+  setTimeout(() => {
+    const opt = {
+      margin: 0.5,
+      filename: 'report_card.pdf',
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2 },
+      jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+    };
+
+    html2pdf().from(document.getElementById("reportContent")).set(opt).save();
+  }, 500);
 }
+
 function sendEmail() {
   const email = document.getElementById("parentEmail").value;
   const school = document.getElementById("schoolName").value;
