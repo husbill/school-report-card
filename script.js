@@ -69,19 +69,31 @@ function generateReport() {
   document.getElementById("reportCard").classList.remove("hidden");
   document.getElementById("reportContent").innerHTML = reportHTML;
 }
-
 function printReport() {
-  const report = document.getElementById("reportCard");
-  report.classList.remove("hidden");
+  const content = document.getElementById("reportContent");
 
+  // Temporarily apply fixed width & background to ensure it renders properly in canvas
+  const originalStyle = content.getAttribute("style") || "";
+  content.setAttribute("style", originalStyle + " background: white; padding: 20px; width: 800px;");
+
+  // Give the browser a moment to render styles
   setTimeout(() => {
-    html2canvas(report).then(canvas => {
+    html2canvas(content, {
+      scale: 2,
+      useCORS: true,
+      allowTaint: false
+    }).then(canvas => {
       const imgData = canvas.toDataURL('image/png');
-      const pdf = new jspdf.jsPDF();
-      const width = pdf.internal.pageSize.getWidth();
-      const height = (canvas.height * width) / canvas.width;
-      pdf.addImage(imgData, 'PNG', 0, 0, width, height);
+      const pdf = new jspdf.jsPDF('p', 'pt', 'a4');
+
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+
+      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
       pdf.save("report_card.pdf");
+
+      // Reset style
+      content.setAttribute("style", originalStyle);
     });
   }, 500);
 }
