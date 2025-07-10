@@ -1,8 +1,7 @@
 (function () {
-  emailjs.init("5Fu2RhS8HXgydjmgM"); // Replace this with your actual public key
+  emailjs.init("5Fu2RhS8HXgydjmgM"); // Replace with your EmailJS public key
 })();
 
-// Add subject row
 function addSubjectRow() {
   const table = document.getElementById("subjectTable");
   const row = table.insertRow();
@@ -16,7 +15,6 @@ function addSubjectRow() {
   }
 }
 
-// Handle form submission
 document.getElementById("reportForm").addEventListener("submit", function (e) {
   e.preventDefault();
 
@@ -70,7 +68,6 @@ document.getElementById("reportForm").addEventListener("submit", function (e) {
   document.getElementById("reportCard").classList.remove("hidden");
 });
 
-// Save as PDF
 function printReport() {
   const content = document.getElementById("reportContent");
   html2canvas(content, { scale: 2, useCORS: true }).then((canvas) => {
@@ -83,64 +80,26 @@ function printReport() {
   });
 }
 
-// Send to Email with auto-upload
 function sendEmail() {
   const parentEmail = document.getElementById("parentEmail").value;
   const studentName = document.getElementById("studentName").value;
   const schoolName = document.getElementById("schoolName").value;
+  const driveLink = document.getElementById("pdfLink").value;
 
-  const reportContent = document.getElementById("reportContent");
+  if (!driveLink.startsWith("http")) {
+    alert("Please paste a valid Google Drive link.");
+    return;
+  }
 
-  html2canvas(reportContent, { scale: 2, useCORS: true }).then((canvas) => {
-    const imgData = canvas.toDataURL("image/png");
-    const pdf = new jspdf.jsPDF("p", "pt", "a4");
-    const width = pdf.internal.pageSize.getWidth();
-    const height = (canvas.height * width) / canvas.width;
-    pdf.addImage(imgData, "PNG", 0, 0, width, height);
-
-    const blob = pdf.output("blob");
-
-    // Upload to file.io
-    const formData = new FormData();
-    formData.append("file", blob, `${studentName}_report.pdf`);
-
-    fetch("https://file.io", {
-      method: "POST",
-      body: formData,
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        if (!data.success) {
-          throw new Error("Failed to upload to File.io");
-        }
-
-        const downloadLink = data.link;
-
-        // Send email via EmailJS
-        emailjs
-          .send(
-            "service_cb7w64g",
-            "template_wy53mpx",
-            {
-              to_email: parentEmail,
-              student_name: studentName,
-              school_name: schoolName,
-              report_link: downloadLink,
-            },
-            "5Fu2RhS8HXgydjmgM"
-          )
-          .then(() => {
-            alert("Email sent with download link to report card!");
-          })
-          .catch((error) => {
-            console.error("Email error:", error);
-            alert("Email failed to send.");
-          });
-      })
-      .catch((err) => {
-        console.error("Upload error:", err);
-        alert("Failed to upload report. Try again.");
-      });
+  emailjs.send("service_cb7w64g", "template_wy53mpx", {
+    to_email: parentEmail,
+    student_name: studentName,
+    school_name: schoolName,
+    report_link: driveLink
+  }).then(() => {
+    alert("Email sent with Google Drive report link!");
+  }).catch((error) => {
+    console.error("Email error:", error);
+    alert("Failed to send email.");
   });
 }
-
