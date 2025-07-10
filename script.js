@@ -1,10 +1,8 @@
-
-// Initialize EmailJS
 (function () {
-  emailjs.init("5Fu2RhS8HXgydjmgM"); // Replace with your actual Public Key
+  emailjs.init("5Fu2RhS8HXgydjmgM"); // Replace this with your actual public key
 })();
 
-// Add a new subject row
+// Add subject row
 function addSubjectRow() {
   const table = document.getElementById("subjectTable");
   const row = table.insertRow();
@@ -18,17 +16,17 @@ function addSubjectRow() {
   }
 }
 
-// Generate Report Card Preview
+// Handle form submission
 document.getElementById("reportForm").addEventListener("submit", function (e) {
   e.preventDefault();
 
   const reportContent = document.getElementById("reportContent");
   const schoolLogo = document.getElementById("schoolLogo").files[0];
-
   let logoImgHTML = "";
+
   if (schoolLogo) {
     const logoURL = URL.createObjectURL(schoolLogo);
-    logoImgHTML = `<img src="${logoURL}" alt="School Logo" class="mx-auto mb-4 h-20" />`;
+    logoImgHTML = `<img src="${logoURL}" class="mx-auto mb-4 h-20" alt="Logo" />`;
   }
 
   const schoolName = document.getElementById("schoolName").value;
@@ -41,11 +39,9 @@ document.getElementById("reportForm").addEventListener("submit", function (e) {
   const teacherComment = document.getElementById("teacherComment").value;
   const headComment = document.getElementById("headComment").value;
 
-  // Build subject table
   const table = document.getElementById("subjectTable");
   let subjectsHTML = `<table class="w-full border text-sm mb-4">
-    <thead><tr><th>Subject</th><th>CA1</th><th>CA2</th><th>Exam</th><th>Total</th></tr></thead>
-    <tbody>`;
+    <thead><tr><th>Subject</th><th>CA1</th><th>CA2</th><th>Exam</th><th>Total</th></tr></thead><tbody>`;
   for (let i = 0; i < table.rows.length; i++) {
     const cells = table.rows[i].cells;
     const subject = cells[0].querySelector("input").value;
@@ -53,13 +49,7 @@ document.getElementById("reportForm").addEventListener("submit", function (e) {
     const ca2 = Number(cells[2].querySelector("input").value);
     const exam = Number(cells[3].querySelector("input").value);
     const total = ca1 + ca2 + exam;
-    subjectsHTML += `<tr>
-      <td>${subject}</td>
-      <td>${ca1}</td>
-      <td>${ca2}</td>
-      <td>${exam}</td>
-      <td>${total}</td>
-    </tr>`;
+    subjectsHTML += `<tr><td>${subject}</td><td>${ca1}</td><td>${ca2}</td><td>${exam}</td><td>${total}</td></tr>`;
   }
   subjectsHTML += `</tbody></table>`;
 
@@ -80,46 +70,77 @@ document.getElementById("reportForm").addEventListener("submit", function (e) {
   document.getElementById("reportCard").classList.remove("hidden");
 });
 
-// Save as PDF (manual)
+// Save as PDF
 function printReport() {
   const content = document.getElementById("reportContent");
-  content.style.background = "white";
-  content.style.padding = "20px";
-  content.style.width = "800px";
-
   html2canvas(content, { scale: 2, useCORS: true }).then((canvas) => {
     const imgData = canvas.toDataURL("image/png");
     const pdf = new jspdf.jsPDF("p", "pt", "a4");
-    const pdfWidth = pdf.internal.pageSize.getWidth();
-    const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-    pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+    const width = pdf.internal.pageSize.getWidth();
+    const height = (canvas.height * width) / canvas.width;
+    pdf.addImage(imgData, "PNG", 0, 0, width, height);
     pdf.save("report_card.pdf");
   });
 }
 
-// Send email with PDF link
+// Send to Email with auto-upload
 function sendEmail() {
-  const studentName = document.getElementById("studentName").value;
   const parentEmail = document.getElementById("parentEmail").value;
+  const studentName = document.getElementById("studentName").value;
   const schoolName = document.getElementById("schoolName").value;
-  const pdfLink = document.getElementById("pdfLink").value;
 
-  if (!pdfLink || !parentEmail) {
-    alert("Please enter both parent email and paste the PDF link.");
-    return;
-  }
+  const reportContent = document.getElementById("reportContent");
 
-  emailjs.send("service_cb7w64g", "template_wy53mpx", {
-    to_email: parentEmail,
-    student_name: studentName,
-    school_name: schoolName,
-    pdf_link: pdfLink,
-  }, "5Fu2RhS8HXgydjmgM")
-  .then(() => {
-    alert("Email sent to parent successfully!");
-  })
-  .catch((err) => {
-    console.error("Email error:", err);
-    alert("Failed to send email.");
+  html2canvas(reportContent, { scale: 2, useCORS: true }).then((canvas) => {
+    const imgData = canvas.toDataURL("image/png");
+    const pdf = new jspdf.jsPDF("p", "pt", "a4");
+    const width = pdf.internal.pageSize.getWidth();
+    const height = (canvas.height * width) / canvas.width;
+    pdf.addImage(imgData, "PNG", 0, 0, width, height);
+
+    const blob = pdf.output("blob");
+
+    // Upload to file.io
+    const formData = new FormData();
+    formData.append("file", blob, `${studentName}_report.pdf`);
+
+    fetch("https://file.io", {
+      method: "POST",
+      body: formData,
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (!data.success) {
+          throw new Error("Failed to upload to File.io");
+        }
+
+        const downloadLink = data.link;
+
+        // Send email via EmailJS
+        emailjs
+          .send(
+            "service_cb7w64g",
+            "template_wy53mpx",
+            {
+              to_email: parentEmail,
+              student_name: studentName,
+              school_name: schoolName,
+              report_link: downloadLink,
+            },
+            "5Fu2RhS8HXgydjmgM"
+          )
+          .then(() => {
+            alert("Email sent with download link to report card!");
+          })
+          .catch((error) => {
+            console.error("Email error:", error);
+            alert("Email failed to send.");
+          });
+      })
+      .catch((err) => {
+        console.error("Upload error:", err);
+        alert("Failed to upload report. Try again.");
+      });
   });
 }
+
