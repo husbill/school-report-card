@@ -1,5 +1,5 @@
 (function () {
-  emailjs.init("5Fu2RhS8HXgydjmgM"); // Replace with your EmailJS public key
+  emailjs.init("5Fu2RhS8HXgydjmgM"); // 🔁 Replace with your actual public key from EmailJS
 })();
 
 function addSubjectRow() {
@@ -34,12 +34,18 @@ document.getElementById("reportForm").addEventListener("submit", function (e) {
   const studentClass = document.getElementById("studentClass").value;
   const age = document.getElementById("age").value;
   const behavior = document.getElementById("behavior").value;
-  const teacherComment = document.getElementById("teacherComment").value;
   const headComment = document.getElementById("headComment").value;
+  const driveLink = document.getElementById("pdfLink").value;
 
   const table = document.getElementById("subjectTable");
   let subjectsHTML = `<table class="w-full border text-sm mb-4">
-    <thead><tr><th>Subject</th><th>CA1</th><th>CA2</th><th>Exam</th><th>Total</th></tr></thead><tbody>`;
+    <thead><tr>
+      <th>Subject</th><th>CA1</th><th>CA2</th><th>Exam</th><th>Total</th><th>Grade</th>
+    </tr></thead><tbody>`;
+
+  let totalScoreSum = 0;
+  let subjectCount = 0;
+
   for (let i = 0; i < table.rows.length; i++) {
     const cells = table.rows[i].cells;
     const subject = cells[0].querySelector("input").value;
@@ -47,9 +53,39 @@ document.getElementById("reportForm").addEventListener("submit", function (e) {
     const ca2 = Number(cells[2].querySelector("input").value);
     const exam = Number(cells[3].querySelector("input").value);
     const total = ca1 + ca2 + exam;
-    subjectsHTML += `<tr><td>${subject}</td><td>${ca1}</td><td>${ca2}</td><td>${exam}</td><td>${total}</td></tr>`;
+
+    let grade = "", color = "";
+    if (total >= 70) { grade = "A"; color = "text-green-600 font-bold"; }
+    else if (total >= 60) { grade = "B"; color = "text-blue-600 font-bold"; }
+    else if (total >= 50) { grade = "C"; color = "text-yellow-600 font-bold"; }
+    else if (total >= 45) { grade = "D"; color = "text-orange-600 font-bold"; }
+    else { grade = "F"; color = "text-red-600 font-bold"; }
+
+    totalScoreSum += total;
+    subjectCount++;
+
+    subjectsHTML += `<tr>
+      <td>${subject}</td><td>${ca1}</td><td>${ca2}</td><td>${exam}</td><td>${total}</td>
+      <td class="${color}">${grade}</td>
+    </tr>`;
   }
-  subjectsHTML += `</tbody></table>`;
+
+  const averageScore = (totalScoreSum / subjectCount).toFixed(1);
+
+  let autoComment = "";
+  if (averageScore >= 85) autoComment = "Excellent performance. Keep it up!";
+  else if (averageScore >= 70) autoComment = "Very good. Shows great understanding.";
+  else if (averageScore >= 50) autoComment = "Fair effort. Can do better with guidance.";
+  else if (averageScore >= 40) autoComment = "Needs to improve in key areas.";
+  else autoComment = "Serious improvement is required.";
+
+  // Pre-fill the teacher comment box
+  document.getElementById("teacherComment").value = autoComment;
+  const teacherComment = document.getElementById("teacherComment").value;
+
+  subjectsHTML += `</tbody></table>
+    <p><strong>Overall Average:</strong> ${averageScore}%</p>
+    <p><strong>Suggested Teacher's Comment:</strong> ${autoComment}</p>`;
 
   reportContent.innerHTML = `
     ${logoImgHTML}
@@ -97,7 +133,7 @@ function sendEmail() {
     school_name: schoolName,
     report_link: driveLink
   }).then(() => {
-    alert("Email sent with Google Drive report link!");
+    alert("Email sent to parent!");
   }).catch((error) => {
     console.error("Email error:", error);
     alert("Failed to send email.");
